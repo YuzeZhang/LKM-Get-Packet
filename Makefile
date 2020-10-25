@@ -1,4 +1,5 @@
-obj-m := lkm.o lkm_mmap.o
+obj-m := get_packet.o
+get_packet-objs := lkm_mmap.o lkm.o
 
 UNAME := $(shell uname -r)
 PWD := $(shell pwd)

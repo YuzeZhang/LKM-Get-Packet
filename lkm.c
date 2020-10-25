@@ -1,10 +1,13 @@
 #include "lkm.h"
+#include "lkm_mmap.h"
 
 // dest ip from user
-static unsigned int filter_ip = 2887057415;
+unsigned int filter_ip = 0; // 2887057415
+
+unsigned int count = 0;
 
 // Convert a string IP addr to a dotted decimal format (little-endian)
-static unsigned int ip_atoi(char *ip_str)
+unsigned int ip_atoi(char *ip_str)
 {
     unsigned int val = 0, part = 0;
     int i = 0;
@@ -36,7 +39,7 @@ static unsigned int ip_atoi(char *ip_str)
 }
 
 // Convert a dotted decimal IP addr to a string
-static void ip_itoa(char *ip_str, unsigned int ip_num)
+void ip_itoa(char *ip_str, unsigned int ip_num)
 {
     unsigned char *p = (unsigned char *)(&ip_num);
     sprintf(ip_str, "%u.%u.%u.%u", p[0], p[1], p[2], p[3]);
@@ -49,6 +52,24 @@ static struct nf_hook_ops nfho = {
     .priority = NF_IP_PRI_FIRST,
 };
 
+void sendPacketInfo(char *packetInfo)
+{
+    // printk("%s\n",packetInfo);
+    if (infop->size + strlen(packetInfo) < infop->cap)
+    {
+        strcat(infop->data, packetInfo);
+        infop->size += strlen(packetInfo);
+    }
+    else
+    {
+        unsigned char *tmp = malloc_reserved_mem(infop->cap * 10);
+        strcpy(tmp, infop->data);
+        kfree(infop->data);
+        infop->data = tmp;
+        sendPacketInfo(packetInfo);
+    }
+}
+
 // Get the info of the specified IP address
 static unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)
 {
@@ -57,12 +78,13 @@ static unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct 
     struct udphdr *udph;
     int header = 0;
     char packetInfo[PACKET_INFO_LEN] = {0};
-    if (ntohl(iph->saddr) == filter_ip)
+    if (MAX_IP_COUNT != 0 && count < MAX_IP_COUNT && ntohl(iph->saddr) == filter_ip)
     {
-        printk("Found a packet with the same srcIP as the user request!\n");
-        printk("==========5-Tuple=========\n");
-        printk("srcIP: %u.%u.%u.%u\n", NIPQUAD(iph->saddr));
-        printk("dstIP: %u.%u.%u.%u\n", NIPQUAD(iph->daddr));
+        count++;
+        // printk("Found a packet with the same srcIP as the user request!\n");
+        // printk("==========5-Tuple=========\n");
+        // printk("srcIP: %u.%u.%u.%u\n", NIPQUAD(iph->saddr));
+        // printk("dstIP: %u.%u.%u.%u\n", NIPQUAD(iph->daddr));
         // Determine the transport layer protocol, currently only TCP and UDP are supported
         if (likely(iph->protocol == IPPROTO_TCP))
         {
@@ -70,18 +92,19 @@ static unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct 
             // skb has data
             if (skb->len - header > 0)
             {
-                printk("srcPORT:%d\n", ntohs(tcph->source));
-                printk("dstPORT:%d\n", ntohs(tcph->dest));
-                printk("PROTOCOL:TCP\n");
+                // printk("srcPORT:%d\n", ntohs(tcph->source));
+                // printk("dstPORT:%d\n", ntohs(tcph->dest));
+                // printk("PROTOCOL:TCP\n");
 
                 sprintf(packetInfo,
-                        "srcIP:%u.%u.%u.%u dstIP:%u.%u.%u.%u srcPORT:%d dstPORT:%d PROTOCOL:%s",
+                        "srcIP:%u.%u.%u.%u\ndstIP:%u.%u.%u.%u\nsrcPORT:%d\ndstPORT:%d\nPROTOCOL:%s\n\n",
                         NIPQUAD(iph->saddr),
                         NIPQUAD(iph->daddr),
                         ntohs(tcph->source),
                         ntohs(tcph->dest),
                         "TCP");
-                // TODO: send msg to user via shm
+                // send msg to user via shm
+                sendPacketInfo(packetInfo);
             }
         }
         else if (likely(iph->protocol == IPPROTO_UDP))
@@ -90,27 +113,32 @@ static unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct 
             // skb has data
             if (skb->len - header > 0)
             {
-                printk("srcPORT:%d\n", ntohs(udph->source));
-                printk("dstPORT:%d\n", ntohs(udph->dest));
-                printk("PROTOCOL:UDP\n");
+                // printk("srcPORT:%d\n", ntohs(udph->source));
+                // printk("dstPORT:%d\n", ntohs(udph->dest));
+                // printk("PROTOCOL:UDP\n");
 
                 sprintf(packetInfo,
-                        "srcIP:%u.%u.%u.%u dstIP:%u.%u.%u.%u srcPORT:%d dstPORT:%d PROTOCOL:%s",
+                        "srcIP:%u.%u.%u.%u\ndstIP:%u.%u.%u.%u\nsrcPORT:%d\ndstPORT:%d\nPROTOCOL:%s\n\n",
                         NIPQUAD(iph->saddr),
                         NIPQUAD(iph->daddr),
                         ntohs(udph->source),
                         ntohs(udph->dest),
                         "UDP");
-                // TODO: send msg to user via shm
+                // send msg to user via shm
+                sendPacketInfo(packetInfo);
             }
         }
-        printk("========5-Tuple end=======\n\n");
+        // printk("========5-Tuple end=======\n\n");
     }
     return NF_ACCEPT;
 }
 
 static int __init lkm_init(void)
 {
+    if (lkm_mmap_init() != 0)
+    {
+        printk("mmap_init error!\n");
+    }
     // TODO: get specific IP addr
 
     // register hook function
@@ -123,9 +151,11 @@ static void __exit lkm_exit(void)
 {
     // unregister hook function
     nf_unregister_net_hook(&init_net, &nfho);
+    lkm_mmap_exit();
     printk("Exit mod!\n");
 }
 
 module_init(lkm_init);
 module_exit(lkm_exit);
 MODULE_AUTHOR("z2z23n0");
+MODULE_LICENSE("GPL");
