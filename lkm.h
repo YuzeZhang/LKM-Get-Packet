@@ -22,7 +22,7 @@
 #define PACKET_INFO_LEN 100
 
 // the maximum num of 5-tuple got, 0 means no limit
-#define MAX_IP_COUNT 100
+#define MAX_IP_COUNT 0
 
 // output dotted decimal IP addr
 #define NIPQUAD(addr)                \

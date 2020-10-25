@@ -1,10 +1,15 @@
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "user.h"
+
+void c_print(char *str)
+{
+    printf("%s\n", str);
+}
+
+char *get_c_buf()
+{
+    char *buf = malloc(sizeof(char) * 1024);
+    return buf;
+}
 
 int check_input_ip(char *ip_str)
 {
@@ -37,6 +42,35 @@ int check_input_ip(char *ip_str)
     return val;
 }
 
+int open_dev_file()
+{
+    int fd = open("../mychardev0", O_RDWR);
+    if (fd < 0)
+    {
+        return -1;
+    }
+    return fd;
+}
+
+int my_write(int fd, char *ip_str)
+{
+    if (write(fd, ip_str, strlen(ip_str)) == -1)
+    {
+        return -1;
+    }
+    return 1;
+}
+
+int my_read(int fd, char *buf)
+{
+    if (read(fd, buf, strlen(buf)) == -1)
+    {
+        return -1;
+    }
+    return 1;
+}
+
+/*
 int main()
 {
     int fd;
@@ -72,3 +106,4 @@ int main()
     close(fd);
     return 0;
 }
+*/

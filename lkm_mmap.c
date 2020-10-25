@@ -36,6 +36,7 @@ static ssize_t char_read(struct file *fp, char __user *buf, size_t count, loff_t
 {
     fp->private_data = infop->data;
     char *buffer = (char *)fp->private_data;
+    ssize_t size = infop->size;
 
     if (copy_to_user(buf, buffer, infop->size))
     {
@@ -46,21 +47,23 @@ static ssize_t char_read(struct file *fp, char __user *buf, size_t count, loff_t
     infop->size = 0;
     printk("%s\n", buf);
     printk("User are using the read func!\n");
-    return infop->size;
+    return size;
 }
 
 static ssize_t char_write(struct file *fp, char __user *buf, size_t count, loff_t *offset)
 {
     // char *buffer = (char *)fp->private_data;
 
+    printk("User are using the write func!\n");
     unsigned int ip = ip_atoi(buf);
     if (ip != -1)
     {
         filter_ip = ip;
+        printk("lkm successfully obtained the IP address sent by the user.\n");
     }
     else
     {
-        printk("Waring: Wrong IP address was entered!\n");
+        printk("Error: Wrong IP address was entered!\n");
         return -EFAULT;
     }
 
@@ -69,7 +72,6 @@ static ssize_t char_write(struct file *fp, char __user *buf, size_t count, loff_
     //     printk("copy_from_user error!\n");
     //     return -EFAULT;
     // }
-    printk("User are using the write func!\n");
     return strlen(buf);
 }
 
