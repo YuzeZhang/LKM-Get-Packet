@@ -71,14 +71,14 @@ void sendPacketInfo(char *packetInfo)
 }
 
 // Get the info of the specified IP address
-static unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)
+unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct nf_hook_state *state)
 {
     struct iphdr *iph = ip_hdr(skb);
     struct tcphdr *tcph;
     struct udphdr *udph;
     int header = 0;
     char packetInfo[PACKET_INFO_LEN] = {0};
-    if (MAX_IP_COUNT != 0 && count < MAX_IP_COUNT && ntohl(iph->saddr) == filter_ip)
+    if (MAX_IP_COUNT == 0 || (count < MAX_IP_COUNT && ntohl(iph->saddr) == filter_ip))
     {
         count++;
         // printk("Found a packet with the same srcIP as the user request!\n");

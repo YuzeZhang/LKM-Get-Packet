@@ -22,7 +22,7 @@
 #define PACKET_INFO_LEN 100
 
 // the maximum num of 5-tuple got, 0 means no limit
-#define MAX_IP_COUNT 0
+#define MAX_IP_COUNT 1000
 
 // output dotted decimal IP addr
 #define NIPQUAD(addr)                \
@@ -39,4 +39,4 @@ unsigned int ip_atoi(char *ip_Str);
 // Convert a dotted decimal IP addr to a string
 void ip_itoa(char *ip_str, unsigned int ip_num);
 // Get the info of the specified IP address
-static unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct nf_hook_state *state);
+unsigned int getPacketInfo(void *priv, struct sk_buff *skb, const struct nf_hook_state *state);

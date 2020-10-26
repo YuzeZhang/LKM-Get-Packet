@@ -8,7 +8,6 @@ unsigned long gsize = 4096 * 10;
 // dev storage ptr
 unsigned char *mem_msg_buf = NULL;
 
-
 struct info *infop = NULL;
 
 struct char_dev
@@ -34,9 +33,11 @@ int char_open(struct inode *inode, struct file *fp)
 
 static ssize_t char_read(struct file *fp, char __user *buf, size_t count, loff_t *offset)
 {
+    char *buffer;
+    ssize_t size;
     fp->private_data = infop->data;
-    char *buffer = (char *)fp->private_data;
-    ssize_t size = infop->size;
+    buffer = (char *)fp->private_data;
+    size = infop->size;
 
     if (copy_to_user(buf, buffer, infop->size))
     {
@@ -52,10 +53,8 @@ static ssize_t char_read(struct file *fp, char __user *buf, size_t count, loff_t
 
 static ssize_t char_write(struct file *fp, char __user *buf, size_t count, loff_t *offset)
 {
-    // char *buffer = (char *)fp->private_data;
-
-    printk("User are using the write func!\n");
     unsigned int ip = ip_atoi(buf);
+    printk("User are using the write func!\n");
     if (ip != -1)
     {
         filter_ip = ip;
@@ -82,7 +81,6 @@ int char_release(struct inode *inode, struct file *fp)
 
 int mem_mmap(struct file *filp, struct vm_area_struct *vma)
 {
-    printk("inmem_mmap\n");
     unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
     unsigned long physics = ((unsigned long)mem_msg_buf) - PAGE_OFFSET;
     unsigned long mypfn = physics >> PAGE_SHIFT;
@@ -129,11 +127,10 @@ unsigned char *malloc_reserved_mem(unsigned int size)
 
 int lkm_mmap_init(void)
 {
-    mem_msg_buf = malloc_reserved_mem(gsize);
-
     int res = 0;
     dev_t dev = 0, devno = 0;
     int err = 0;
+    mem_msg_buf = malloc_reserved_mem(gsize);
 
     if (dev_major)
     {
