@@ -7,12 +7,14 @@ Get the 5-tuple of the packet specifying the source IP from the kernel, source a
 ## Usage
 
 1. git clone
-2. `cd LKM-Get-Packet/user`
+2. `cd LKM-Get-Packet/`
 3. `sudo ./build.sh`
 4. `cd user/`
 5. `go run user.go xxx.xxx.xxx.xxx`
 
 ......
+
+`sudo rmmod get_packet`
 
 ## Usage Examples
 
