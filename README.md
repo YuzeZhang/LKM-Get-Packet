@@ -12,6 +12,8 @@ Get the 5-tuple of the packet specifying the source IP from the kernel, source a
 4. `cd user/`
 5. `go run user.go xxx.xxx.xxx.xxx`
 
+tips: If you want the program to run all the time, you need to set `MAX_IP_COUNT` to 0 in `lkm.h`.
+
 ......
 
 `sudo rmmod get_packet`
