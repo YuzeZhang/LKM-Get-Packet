@@ -18,6 +18,7 @@
 #include <net/tcp.h>
 #include <net/icmp.h>
 #include <net/protocol.h>
+#include <linux/version.h>
 
 #define PACKET_INFO_LEN 100
 

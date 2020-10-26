@@ -139,10 +139,12 @@ static int __init lkm_init(void)
     {
         printk("mmap_init error!\n");
     }
-    // TODO: get specific IP addr
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0)
     // register hook function
     nf_register_net_hook(&init_net, &nfho);
+#else
+        nf_register_hook(&nfho);
+#endif
     printk("Start getting 5-Tuple with specific IP addr...\n");
     return 0;
 }
