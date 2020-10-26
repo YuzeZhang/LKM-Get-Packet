@@ -20,7 +20,7 @@ extern unsigned char *packetInfo;
 
 extern unsigned int filter_ip;
 
-extern unsigned int ip_atoi(char *ip_str);
+extern unsigned int ip_atoi(const char *ip_str);
 
 struct info
 {

@@ -7,7 +7,7 @@ unsigned int filter_ip = 0; // 2887057415
 unsigned int count = 0;
 
 // Convert a string IP addr to a dotted decimal format (little-endian)
-unsigned int ip_atoi(char *ip_str)
+unsigned int ip_atoi(const char *ip_str)
 {
     unsigned int val = 0, part = 0;
     int i = 0;

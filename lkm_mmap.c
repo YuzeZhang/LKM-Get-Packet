@@ -51,7 +51,7 @@ static ssize_t char_read(struct file *fp, char __user *buf, size_t count, loff_t
     return size;
 }
 
-static ssize_t char_write(struct file *fp, char __user *buf, size_t count, loff_t *offset)
+static ssize_t char_write(struct file *fp, const char __user *buf, size_t count, loff_t *offset)
 {
     unsigned int ip = ip_atoi(buf);
     printk("User are using the write func!\n");

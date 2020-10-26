@@ -36,7 +36,7 @@
 extern struct info *infop;
 
 // Convert a string IP addr to a dotted decimal format (little-endian)
-unsigned int ip_atoi(char *ip_Str);
+unsigned int ip_atoi(const char *ip_Str);
 // Convert a dotted decimal IP addr to a string
 void ip_itoa(char *ip_str, unsigned int ip_num);
 // Get the info of the specified IP address
